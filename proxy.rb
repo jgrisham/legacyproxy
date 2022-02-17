@@ -476,7 +476,7 @@ loop {
 		body = nil if body.length == 0
 		headers = {}
 		urlRequest = nil
-		puts " ---> requestHeaders: #{requestHeaders.to_s}"
+		# puts " ---> requestHeaders: #{requestHeaders.to_s}" if $verbose
 		requestHeaders.split("\r\n").each do |h|
 			# first line is the GET <url> HTTP/<version> request:
 			if urlRequest.nil? then
@@ -493,7 +493,7 @@ loop {
 			end
 		end
 
-		puts " ---> urlRequest: #{urlRequest.to_s}"
+		# puts " ---> urlRequest: #{urlRequest.to_s}"
 
 		headers['x-forwarded-for'] = clientAddress[3]
 		headers['via'] = "HTTP/1.1 #{$userAgent}"
@@ -509,9 +509,15 @@ loop {
 		if verb == "CONNECT" then
 			#sendError(client, "Invalid request")
 			sendError(client, "HTTP Version Not Supported", 505)
-			puts "--> Invalid verb (client / CONNECT)"
+			# puts "--> Invalid verb (client / CONNECT)" if $verbose
 			# return
 		elsif
+			
+			puts " ---> requestHeaders: #{requestHeaders.to_s}" if $verbose
+
+			puts " ---> urlRequest: #{urlRequest.to_s}"
+
+
 			puts "--> #{clientAddress[2]}:#{clientAddress[1]} #{verb} #{url}"
 
 			puts "Request Headers: '#{headers}'" if $verbose

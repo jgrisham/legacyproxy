@@ -26,7 +26,7 @@ $bufferLength = 4096
 # $verbose = false
 $verbose = true
 $userAgent = 'LegacyProxy/1.0'
-$version = 'v1.0.1a11 # For debug / change management purposes only ... not normally seen by user
+$version = 'v1.0.1a11'	# For debug / change management purposes only ... not normally seen by user
 $programName = $0		# Mostly to help me remember the syntax - jhg
 
 $entityCoder = HTMLEntities.new
@@ -83,7 +83,7 @@ $statusCodes = {				# https://www.iana.org/assignments/http-status-codes/http-st
 	415 => "Unsupported Media Type",
 	416 => "Range Not Satisfiable",
 	417 => "Expectation Failed",
-	418 => "I am a Teapot",
+	418 => "I'm a Teapot",
 	421 => "Misdirected Request",
 	422 => "Unprocessable Content",		# [RFC-ietf-httpbis-semantics, Section 15.5.21]
 	423 => "Locked",					# [RFC4918]

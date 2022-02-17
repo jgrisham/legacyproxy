@@ -235,7 +235,7 @@ begin
 	end # class Parser
 	# options1 = Parser.parse %w[--help]
 	# options1 = Parser.parse ARGV
-	options2 = OptparseExample.parse ARGV
+	options2 = ScriptOptions.parse ARGV
 rescue LoadError
   # The 'a' gem is not installed
   puts "	OptionParser gem is not available - ignoring command-line arguments." if $verbose

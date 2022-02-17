@@ -487,6 +487,7 @@ loop {
 			end
 			key, value = h.split(/:\s*/)
 			next if value.nil?
+			next if key.downcase == "Upgrade-Insecure-Requests"
 			key = key.downcase
 			if headers.has_key?(key) then
 				headers[key] += ", #{value}"

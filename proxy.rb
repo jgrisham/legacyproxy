@@ -435,6 +435,7 @@ def sendProxyContent(client, url, verb, headers, body)
 		responseHeaders = {}
 		response.header.each do |key, value|
 			next if value.nil?
+			puts " |__ key: #{key}; value: #{value}" if $verbose
 			key = key.downcase
 			if responseHeaders.has_key?(key) then
 				responseHeaders[key] += ", #{value}"

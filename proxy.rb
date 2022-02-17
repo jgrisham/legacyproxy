@@ -25,7 +25,7 @@ $bufferLength = 4096
 # $verbose = false
 $verbose = true
 $userAgent = 'LegacyProxy/1.0'
-$version = 'v1.0.1a8' # For debug / change management purposes only ... not normally seen by user
+$version = 'v1.0.1a9' # For debug / change management purposes only ... not normally seen by user
 
 $entityCoder = HTMLEntities.new
 
@@ -132,19 +132,16 @@ begin
 		ClassVersion = '1.0.0'
 
 		class ScriptOptions
-
-			# Not sure what this does - jhg
-			# https://www.rubyguides.com/2018/11/attr_accessor/
 			# Instance variables - start with '@'
 			# Automatically creates 'getter' and 'setter' methods to read instance variables from instances of this object
 			attr_accessor :port, :bufferLength, :verbose, :userAgent
 
 			def initialize
 				# Set initial variable values
-				self.port = 8080
-				self.verbose = true
-				self.bufferLength = 4096
-				self.userAgent = 'LegacyProxy/1.0'
+				self.port = $port
+				self.verbose = $verbose
+				self.bufferLength = $bufferLength
+				self.userAgent = $userAgent
 			end # method def initialize
 		end # class ScriptOptions
 
@@ -184,9 +181,12 @@ begin
 
 		def self.specify_listening_port(parser)
 			# puts ARGV[x].to_i + ARGV[1].to_i
+			# # TODO: Need beter error catching in case this is not providded as a number
+			# (just ignore if not a number??)
 			parser.on("-p PORT", "--port=PORT", Integer, "Incoming TCP port") do |p|
 				# self.port = p.to_i
 				@options.port = p
+			rescue
 			end
 		end # method def specify_listening_port(parser)
 
@@ -246,7 +246,13 @@ begin
 	# options1 = Parser.parse %w[--help]
 	# options1 = Parser.parse ARGV
 	$options2 = ProcessScriptArguments.parse ARGV
-rescue LoadError
+	# Need to actually set global variables based on options now
+	$port = $options2.port
+	$verbose = $options2.verbose
+	$bufferLength = $options2.bufferLength
+	$userAgent = $options2.userAgent
+#rescue LoadError
+rescue # let's just ignore _all_ errors from the above 'begin' block
 	# The 'optparse' gem is not installed
 	puts "	OptionParser gem is not available - ignoring command-line arguments." if $verbose
 end

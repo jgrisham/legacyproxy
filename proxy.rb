@@ -25,7 +25,7 @@ $bufferLength = 4096
 # $verbose = false
 $verbose = true
 $userAgent = 'LegacyProxy/1.0'
-$version = 'v1.0.1a9' # For debug / change management purposes only ... not normally seen by user
+$version = 'v1.0.1a10' # For debug / change management purposes only ... not normally seen by user
 
 $entityCoder = HTMLEntities.new
 
@@ -281,8 +281,11 @@ end
 puts "	Starting #{$version} of #{$programName} as User-Agent #{$userAgent}." if $verbose
 puts "	Will attempt to listen on port #{$port}; buffer length set to: #{$bufferLength}." if $verbose
 puts "	Running in verbose / debug mode." if $verbose
-puts "   Options2 verbose status: #{$options2.verbose}"
-puts "   Options2 port: #{$options2.port}"
+begin
+	puts "   Options2 verbose status: #{$options2.verbose}"
+	puts "   Options2 port: #{$options2.port}"
+rescue
+end
 puts "   Global port:   #{$port}"
 
 

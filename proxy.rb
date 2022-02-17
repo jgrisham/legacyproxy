@@ -421,7 +421,7 @@ def sendProxyContent(client, url, verb, headers, body)
 			puts "    --> URI         query: #{uri.query}"
 			puts "    --> URI        opaque: #{uri.opaque}"
 			puts "    --> URI      fragment: #{uri.fragment}"	# e.g. page anchor
-			puts "    --> URI        parser: #{uri.parser}"		# internal use
+			# puts "    --> URI        parser: #{uri.parser}"		# internal use
 			# puts "    --> URI     arg_check: #{uri.arg_check}"
 			puts "    --> URI   request_uri: #{uri.request_uri}"
 			puts "    --> HTTP send headers: #{headers}"
@@ -476,6 +476,7 @@ loop {
 		body = nil if body.length == 0
 		headers = {}
 		urlRequest = nil
+		puts " ---> requestHeaders: #{requestHeaders.to_s}"
 		requestHeaders.split("\r\n").each do |h|
 			# first line is the GET <url> HTTP/<version> request:
 			if urlRequest.nil? then
@@ -491,6 +492,8 @@ loop {
 				headers[key] = value
 			end
 		end
+
+		puts " ---> urlRequest: #{urlRequest.to_s}"
 
 		headers['x-forwarded-for'] = clientAddress[3]
 		headers['via'] = "HTTP/1.1 #{$userAgent}"

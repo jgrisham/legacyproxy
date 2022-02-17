@@ -394,6 +394,18 @@ def sendProxyContent(client, url, verb, headers, body)
 		http.open_timeout = 30
 		http.read_timeout = 45
 
+		if $verbose
+			puts ""
+			puts "    --> URL: #{url}"
+			puts "    --> URI: #{uri}"
+			puts "    --> HTTP    send verb: #{verb}"
+			puts "    --> URI instance variables: #{uri.instance_variables}"
+			puts "    --> URI        scheme: #{uri.scheme}"
+			puts "    --> URI   request_uri: #{uri.request_uri}"
+			puts "    --> HTTP send headers: #{headers}"
+			puts "    --> HTTP    send body: #{body}"
+			puts ""
+		end
 		response = http.send_request(verb, uri.request_uri, body, headers)
 
 		puts "--> Response code: #{response.code}" if $verbose

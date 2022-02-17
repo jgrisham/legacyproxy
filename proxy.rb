@@ -386,6 +386,11 @@ def sendProxyContent(client, url, verb, headers, body)
 	begin
 		# TODO: try https first, fall back to http?
 		uri = URI.parse(url.strip)
+		#if object.is_a?(ClassName)
+		# URI::HTTPS.build(host: 'www.example.com', port: 80, path: '/foo/bar')
+		if uri.respond_to?(:request_uri) == false	# if resolved to URI::Generic, force https
+			uri = URI.parse("https://#{url.strip}")
+		end
 		puts "<-- #{uri.to_s}" if $verbose
 		http = Net::HTTP.new(uri.host, uri.port)
 		if uri.scheme == 'https' then
@@ -401,24 +406,29 @@ def sendProxyContent(client, url, verb, headers, body)
 			puts "    --> URI: #{uri}"
 			puts "    -->            client: #{client}"
 			puts "    --> HTTP    send verb: #{verb}"
-			puts "    --> URI instance   methods: #{uri.instance_methods}"
+			# puts "    --> URI instance   methods: #{uri.instance_methods}"
 			puts "    --> URI instance variables: #{uri.instance_variables}"
 			puts "    --> URI        scheme: #{uri.scheme}"
+			puts "    --> URI     relative?: #{uri.relative?()}"
+			puts "    --> URI hierarchical?: #{uri.hierarchical?()}"
+			puts "    --> URI      userinfo: #{uri.userinfo}"
 			puts "    --> URI          user: #{uri.user}"
 			puts "    --> URI      password: #{uri.password}"
 			puts "    --> URI          host: #{uri.host}"
 			puts "    --> URI          port: #{uri.port}"
+			puts "    --> URI      registry: #{uri.registry}"
 			puts "    --> URI          path: #{uri.path}"
 			puts "    --> URI         query: #{uri.query}"
 			puts "    --> URI        opaque: #{uri.opaque}"
-			puts "    --> URI      fragment: #{uri.fragment}"
-			puts "    --> URI        parser: #{uri.parser}"
+			puts "    --> URI      fragment: #{uri.fragment}"	# e.g. page anchor
+			puts "    --> URI        parser: #{uri.parser}"		# internal use
+			puts "    --> URI     arg_check: #{uri.arg_check}"
 			puts "    --> URI   request_uri: #{uri.request_uri}"
 			puts "    --> HTTP send headers: #{headers}"
 			puts "    --> HTTP    send body: #{body}"
 			puts ""
 		end
-		response = http.send_request(verb, uri.request_uri, body, headers)
+		response = http.send_request(verb, uri.to_s, body, headers) # removed .request_uri
 
 		puts "--> Response code: #{response.code}" if $verbose
 

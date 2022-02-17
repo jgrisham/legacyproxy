@@ -25,7 +25,7 @@ $bufferLength = 4096
 # $verbose = false
 $verbose = true
 $userAgent = 'LegacyProxy/1.0'
-$version = 'v1.0.1a' # For debug / change management purposes only ... not normally seen by user
+$version = 'v1.0.1a1' # For debug / change management purposes only ... not normally seen by user
 
 $entityCoder = HTMLEntities.new
 

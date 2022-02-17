@@ -112,6 +112,7 @@ $statusCodes = {				# https://www.iana.org/assignments/http-status-codes/http-st
 #		https://www.thoughtco.com/command-line-arguments-2908191
 # Alternative options
 #	OptionParser class	https://ruby-doc.org/stdlib-2.4.2/libdoc/optparse/rdoc/OptionParser.html
+#1						https://ruby-doc.org/stdlib-2.5.5/libdoc/optparse/rdoc/OptionParser.html
 #	GetoptLong
 $programName = $0
 
@@ -122,39 +123,108 @@ puts "	Running in verbose / debug mode." if $verbose
 begin
 	# Load OptionParser module
 	require 'optparse'
+
+	class ScriptOptions
+
+		# Not sure what this does - jhg
+		# https://www.rubyguides.com/2018/11/attr_accessor/
+		# Instance variables - start with '@'
+		# Automatically creates 'getter' and 'setter' methods to read instance variables from instances of this object
+		attr_accessor :port, :bufferLength, :verbose
+
+		def initialize
+			# Set initial variable values
+			self.port = 8080
+			self.verbose = false
+		end # method def initialize
+
+		def define_options(parser)
+			parser.banner = "Usage: #{$programName} [options]"
+			parser.seperator ""
+			parser.seperator "Specific options:"
+
+			# add additional options
+			specify_listening_port(parser)
+			boolean_verbose_option(parser)
+
+			parser.separator ""
+			parser.separator "Common options:"
+
+			# No argument, shows at tail. This will print an options summary.
+			parser.on_tail("-h", "--help", "Show this message") do
+				puts parser
+				exit
+			end
+			# Print current script version
+			parser.on_tail("-V", "--version", "Show version") do
+				puts Version
+				exit
+			end
+		end # method def define_options(parser)
+
+		# parser.on("--type [TYPE]", [:text, :binary, :auto],
+		def boolean_verbose_option(parser)
+			# Boolean switch.
+			parser.on("-v", "--[no-]verbose", "Run verbosely") do |v|
+			  self.verbose = v
+			end
+		end # method def boolean_verbose_option(parser)
+
+		def specify_listening_port(parser)
+			# puts ARGV[x].to_i + ARGV[1].to_i
+			parser.on("-p PORT", "--port=PORT", "Incoming TCP port") do |port|
+				self.port = port.to_i
+			end
+		end # method def specify_listening_port(parser)
+	end # class ScriptOptions
+
+	#
+	# Return a structure describing the options.
+	#
+	def parse(args)
+	  # The options specified on the command line will be collected in
+	  # *options*.
+  
+	  @options = ScriptOptions.new
+	  @args = OptionParser.new do |parser|
+		@options.define_options(parser)
+		parser.parse!(args)
+	  end
+	  @options
+	end
+
+	# get list of instance variables
+	# machine.instance_variables
+
 	# Options = Struct.new(:name)
 	class Parser
+		# Defines 'parse' method of class 'Parser'?
 	  def self.parse(options)
-	    # args = Options.new("world")
+		# args = Options.new("world")
 
-	    opt_parser = OptionParser.new do |opts|
-	      opts.banner = "Usage: #{$programName} [options]"
+		  # new copy of 'OptionParser' for each ??
+		opt_parser = OptionParser.new do |opts|
+		  opts.banner = "Usage: #{$programName} [options]"
 
-	      opts.on("-pPORT", "--port=PORT", "TCP port to monitor for incoming requests") do |n|
-	        args.name = n
-	      end
+		  opts.on("-pPORT", "--port=PORT", "TCP port to monitor for incoming requests") do |n|
+			args.name = n
+		  end
 
-	      opts.on("-h", "--help", "Prints this help") do
-	        puts opts
-	        exit
-	      end
-		    
-	      opts.on("-v", "--[no-]verbose", "Run verbosely") do |v|
+		  opts.on("-h", "--help", "Prints this help") do
+			puts opts
+			exit
+		  end
+			
+		  opts.on("-v", "--[no-]verbose", "Run verbosely") do |v|
 	 	   options[:verbose] = v
-	      end
-		    
+		  end
+			
 		  
-		#def boolean_verbose_option(parser)
-		     # Boolean switch.
-		#      parser.on("-v", "--[no-]verbose", "Run verbosely") do |v|
-		#	self.verbose = v
-		#      end
-		# end
-		    
-	    end
+			
+		end
 
-	    opt_parser.parse!(ARGV)
-	    return args
+		opt_parser.parse!(ARGV)
+		return args
 	  end
 	end
 	# options = Parser.parse %w[--help]
@@ -181,7 +251,7 @@ if ARGV.length > 0
 	end
 	
 	# If a number, convert to a number
-	puts ARGV[x].to_i + ARGV[1].to_i
+	# puts ARGV[x].to_i + ARGV[1].to_i
 end
 
 server = TCPServer.open($port)

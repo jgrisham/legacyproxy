@@ -179,8 +179,9 @@ begin
 
 		def specify_listening_port(parser)
 			# puts ARGV[x].to_i + ARGV[1].to_i
-			parser.on("-p PORT", "--port=PORT", "Incoming TCP port") do |port|
-				self.port = port.to_i
+			parser.on("-p PORT", "--port=PORT", Integer, "Incoming TCP port") do |p|
+				# self.port = p.to_i
+				self.port = p
 			end
 		end # method def specify_listening_port(parser)
 	end # class ScriptOptions
@@ -195,7 +196,7 @@ begin
 	  @options = ScriptOptions.new
 	  @args = OptionParser.new do |parser|
 		@options.define_options(parser)
-		parser.parse!(args)
+		parser.parse!(args) # self-modifying 'dangerous' method?
 	  end
 	  @options
 	end
@@ -213,7 +214,7 @@ begin
 		opt_parser = OptionParser.new do |opts|
 		  opts.banner = "Usage: #{$programName} [options]"
 
-		  opts.on("-pPORT", "--port=PORT", "TCP port to monitor for incoming requests") do |n|
+		  opts.on("-pPORT", "--port=PORT", Integer, "TCP port to monitor for incoming requests") do |n|
 			args.name = n
 		  end
 
@@ -226,16 +227,14 @@ begin
 	 	   options[:verbose] = v
 		  end
 			
-		  
-			
-		end
+		end #opt_parser
 
 		opt_parser.parse!(ARGV)
 		return args
-	  end
-	end
+	  end # def self.parse
+	end # class Parser
 	# options1 = Parser.parse %w[--help]
-	options1 = Parser.parse ARGV
+	# options1 = Parser.parse ARGV
 	options2 = OptparseExample.parse ARGV
 rescue LoadError
   # The 'a' gem is not installed

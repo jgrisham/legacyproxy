@@ -1,14 +1,15 @@
 #!/usr/bin/env ruby
 
-# To do - jhg
-# - Fix "Error: undefined method `request_uri' for #<URI::Generic www.apple.com:443>"
-# - Parse command-line arguments
-# - Catch CTRL-C and other signals (e.g. 'status' signal)
-# - Add optional counters (runtime, number of requests, number of bytes, etc...)
-#
-#  A proxy MUST NOT transform the payload (Section 3.3 of [RFC7231]) of
-#   a message that contains a no-transform cache-control directive
-#   (Section 5.2 of [RFC7234]).
+{ # To do - jhg
+	# - Fix "Error: undefined method `request_uri' for #<URI::Generic www.apple.com:443>"
+	# - Parse command-line arguments
+	# - Catch CTRL-C and other signals (e.g. 'status' signal)
+	# - Add optional counters (runtime, number of requests, number of bytes, etc...)
+	#
+	#  A proxy MUST NOT transform the payload (Section 3.3 of [RFC7231]) of
+	#   a message that contains a no-transform cache-control directive
+	#   (Section 5.2 of [RFC7234]).
+}
 	
 require 'rubygems'
 require 'socket'
@@ -25,18 +26,20 @@ $bufferLength = 4096
 # $verbose = false
 $verbose = true
 $userAgent = 'LegacyProxy/1.0'
-$version = 'v1.0.1a10' # For debug / change management purposes only ... not normally seen by user
+$version = 'v1.0.1a11 # For debug / change management purposes only ... not normally seen by user
+$programName = $0		# Mostly to help me remember the syntax - jhg
 
 $entityCoder = HTMLEntities.new
 
-# HTTP status code categories:
-#  1xx (Informational): The request was received, continuing process
-#  2xx (Successful):    The request was successfully received, understood, and accepted
-#  3xx (Redirection):   Further action needs to be taken in order to complete the request
-#  4xx (Client Error):  The request contains bad syntax or cannot be fulfilled
-#  5xx (Server Error):  The server failed to fulfill an apparently valid request
-# status codes that are defined as cacheable by default
-#  (e.g., 200, 203, 204, 206, 300, 301, 404, 405, 410, 414, and 501 in RFC7231)
+{ # HTTP status code categories:
+	#  1xx (Informational): The request was received, continuing process
+	#  2xx (Successful):    The request was successfully received, understood, and accepted
+	#  3xx (Redirection):   Further action needs to be taken in order to complete the request
+	#  4xx (Client Error):  The request contains bad syntax or cannot be fulfilled
+	#  5xx (Server Error):  The server failed to fulfill an apparently valid request
+	# status codes that are defined as cacheable by default
+	#  (e.g., 200, 203, 204, 206, 300, 301, 404, 405, 410, 414, and 501 in RFC7231)
+}
 
 $statusCodes = {				# https://www.iana.org/assignments/http-status-codes/http-status-codes.xhtml
 	100 => "Continue",
@@ -104,34 +107,36 @@ $statusCodes = {				# https://www.iana.org/assignments/http-status-codes/http-st
 	511 => "Network Authentication Required"	# [RFC6585]
 }
 
-# Parse command-line arguments - jhg
-# References:	https://code-maven.com/argv-the-command-line-arguments-in-ruby
-#		https://www.codecademy.com/article/ruby-command-line-argv
-#		https://ruby-doc.org/core-1.9.3/ARGF.html#method-i-argv
-#		https://ruby-doc.com/docs/ProgrammingRuby/html/rubyworld.html
-#		https://www.thoughtco.com/command-line-arguments-2908191
-# Alternative options
-#	OptionParser class	https://ruby-doc.org/stdlib-2.4.2/libdoc/optparse/rdoc/OptionParser.html
-#1						https://ruby-doc.org/stdlib-2.5.5/libdoc/optparse/rdoc/OptionParser.html
-#	GetoptLong
+{ # Parse command-line arguments - jhg
+	# References:	https://code-maven.com/argv-the-command-line-arguments-in-ruby
+	#		https://www.codecademy.com/article/ruby-command-line-argv
+	#		https://ruby-doc.org/core-1.9.3/ARGF.html#method-i-argv
+	#		https://ruby-doc.com/docs/ProgrammingRuby/html/rubyworld.html
+	#		https://www.thoughtco.com/command-line-arguments-2908191
+	# Alternative options
+	#	OptionParser class	https://ruby-doc.org/stdlib-2.4.2/libdoc/optparse/rdoc/OptionParser.html
+	#1						https://ruby-doc.org/stdlib-2.5.5/libdoc/optparse/rdoc/OptionParser.html
+	#	GetoptLong
 
-# Also taken from:
-# https://gist.github.com/Neurogami/c27443536227bdef8f84c923bdc24820
-# https://bugs.ruby-lang.org/issues/12323
-# This is based on code copied from https://bugs.ruby-lang.org/issues/12323
-# to replace non-working example given in the rdocs for the OptionParser class
+	# Also taken from:
+	# https://gist.github.com/Neurogami/c27443536227bdef8f84c923bdc24820
+	# https://bugs.ruby-lang.org/issues/12323
+	# This is based on code copied from https://bugs.ruby-lang.org/issues/12323
+	# to replace non-working example given in the rdocs for the OptionParser class
+}
 
 $programName = $0
 
 
+# if ARGV.length > 0 # Don't bother with any of this if there are no command-line arguments!
 
-begin
+begin # Parse command-line options using 'OptionParser' module
 	# Load OptionParser module
-	require 'optparse'
-	class ProcessScriptArguments
+	require 'optparse'				
+	class ProcessScriptArguments	# Wrap ScriptOptions class with methods
 		ClassVersion = '1.0.0'
 
-		class ScriptOptions
+		class ScriptOptions			# Data object
 			# Instance variables - start with '@'
 			# Automatically creates 'getter' and 'setter' methods to read instance variables from instances of this object
 			attr_accessor :port, :bufferLength, :verbose, :userAgent
@@ -145,7 +150,7 @@ begin
 			end # method def initialize
 		end # class ScriptOptions
 
-		def self.define_options #(parser)
+		def self.define_options #(parser)	# main class method
 			@parser ||= OptionParser.new do |parser|
 				parser.banner = "Usage: #{$programName} [options]"
 				parser.separator ""
@@ -172,28 +177,25 @@ begin
 		end # method def define_options(parser)
 
 		# parser.on("--type [TYPE]", [:text, :binary, :auto],
-		def self.boolean_verbose_option(parser)
+		def self.boolean_verbose_option(parser)					# option: --verbose
 			# Boolean switch.
 			parser.on("-v", "--[no-]verbose", "Run verbosely") do |v|
 				@options.verbose = v
 			end
 		end # method def boolean_verbose_option(parser)
 
-		def self.specify_listening_port(parser)
+		def self.specify_listening_port(parser)					# option: --port PORTNUM
 			# puts ARGV[x].to_i + ARGV[1].to_i
 			# # TODO: Need beter error catching in case this is not providded as a number
 			# (just ignore if not a number??)
-			parser.on("-p PORT", "--port=PORT", Integer, "Incoming TCP port") do |p|
+			parser.on("-p PORTNUM", "--port=PORTNUM", Integer, "Incoming TCP port") do |p|
 				# self.port = p.to_i
 				@options.port = p
 			rescue
 			end
 		end # method def specify_listening_port(parser)
 
-		#
-		# Return a structure describing the options.
-		#
-		def self.parse(args)
+		def self.parse(args)					# Return a structure describing the options.
 			# The options specified on the command line will be collected in
 			# *options*.
 		
@@ -206,16 +208,12 @@ begin
 			@options
 		end
 
-		attr_reader :parser, :options
-
+		attr_reader :parser, :options			# Allow external access to properties
 	
 	end # class ProcessScriptArguments
 
-	# get list of instance variables
-	# machine.instance_variables
-
 	# Options = Struct.new(:name)
-	class Parser
+	class Parser					# Alternative implemention - not in use 2022-02-17
 		# Defines 'parse' method of class 'Parser'?
 	  def self.parse(options)
 		# args = Options.new("world")
@@ -243,19 +241,24 @@ begin
 		return args
 	  end # def self.parse
 	end # class Parser
-	# options1 = Parser.parse %w[--help]
+
+	# options1 = Parser.parse %w[--help]			# Test with dummy data
 	# options1 = Parser.parse ARGV
-	$options2 = ProcessScriptArguments.parse ARGV
+	$options2 = ProcessScriptArguments.parse ARGV	# Actually parse command-line options
+
 	# Need to actually set global variables based on options now
 	$port = $options2.port
 	$verbose = $options2.verbose
 	$bufferLength = $options2.bufferLength
 	$userAgent = $options2.userAgent
+	# Because I did that, does 'options2' actually need to be global? (i.e. '$options2')
 #rescue LoadError
 rescue # let's just ignore _all_ errors from the above 'begin' block
 	# The 'optparse' gem is not installed
 	puts "	OptionParser gem is not available - ignoring command-line arguments." if $verbose
 end
+
+# end	# end if ARGV.length > 0
 
 if ARGV.length > 0
 	input_array = ARGV

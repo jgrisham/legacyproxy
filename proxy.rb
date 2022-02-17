@@ -25,7 +25,7 @@ $bufferLength = 4096
 # $verbose = false
 $verbose = true
 $userAgent = 'LegacyProxy/1.0'
-$version = 'v1.0.1a1' # For debug / change management purposes only ... not normally seen by user
+$version = 'v1.0.1a2' # For debug / change management purposes only ... not normally seen by user
 
 $entityCoder = HTMLEntities.new
 
@@ -177,14 +177,14 @@ begin
 		end # method def define_options(parser)
 
 		# parser.on("--type [TYPE]", [:text, :binary, :auto],
-		def boolean_verbose_option(parser)
+		def self.boolean_verbose_option(parser)
 			# Boolean switch.
 			parser.on("-v", "--[no-]verbose", "Run verbosely") do |v|
 			  self.verbose = v
 			end
 		end # method def boolean_verbose_option(parser)
 
-		def specify_listening_port(parser)
+		def self.specify_listening_port(parser)
 			# puts ARGV[x].to_i + ARGV[1].to_i
 			parser.on("-p PORT", "--port=PORT", Integer, "Incoming TCP port") do |p|
 				# self.port = p.to_i
@@ -195,7 +195,7 @@ begin
 		#
 		# Return a structure describing the options.
 		#
-		def parse(args)
+		def self.parse(args)
 			# The options specified on the command line will be collected in
 			# *options*.
 		

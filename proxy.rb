@@ -1,5 +1,15 @@
 #!/usr/bin/env ruby
 
+# To do - jhg
+# - Fix "Error: undefined method `request_uri' for #<URI::Generic www.apple.com:443>"
+# - Parse command-line arguments
+# - Catch CTRL-C and other signals (e.g. 'status' signal)
+# - Add optional counters (runtime, number of requests, number of bytes, etc...)
+#
+#  A proxy MUST NOT transform the payload (Section 3.3 of [RFC7231]) of
+#   a message that contains a no-transform cache-control directive
+#   (Section 5.2 of [RFC7234]).
+	
 require 'rubygems'
 require 'socket'
 require 'uri'
@@ -12,30 +22,49 @@ require 'rmagick'
 
 $port = 8080
 $bufferLength = 4096
-$verbose = false
+# $verbose = false
+$verbose = true
 $userAgent = 'LegacyProxy/1.0'
+$version = 'v1.0.1a' # For debug / change management purposes only ... not normally seen by user
 
 $entityCoder = HTMLEntities.new
 
-$statusCodes = {
+# HTTP status code categories:
+#  1xx (Informational): The request was received, continuing process
+#  2xx (Successful):    The request was successfully received, understood, and accepted
+#  3xx (Redirection):   Further action needs to be taken in order to complete the request
+#  4xx (Client Error):  The request contains bad syntax or cannot be fulfilled
+#  5xx (Server Error):  The server failed to fulfill an apparently valid request
+# status codes that are defined as cacheable by default
+#  (e.g., 200, 203, 204, 206, 300, 301, 404, 405, 410, 414, and 501 in RFC7231)
+
+$statusCodes = {				# https://www.iana.org/assignments/http-status-codes/http-status-codes.xhtml
 	100 => "Continue",
-	101 => "Switching Protocols",
+	101 => "Switching Protocols",		# [RFC7231], removed in HTTP/2
+	102 => "Processing",			# [RFC2518]
+	103 => "Early Hints",			# [RFC8297]
 	200 => "OK",
 	201 => "Created",
 	202 => "Accepted",
-	203 => "Non-Authoritative Information",
+	203 => "Non-Authoritative Information",	# e.g. changed by proxy (Section 6.3.4 of [RFC7231]), HTTP/1.1 warn-code of 214 ("Transformation Applied") if one is not already in the message (see Section 5.5 of [RFC7234])
 	204 => "No Content",
 	205 => "Reset Content",
 	206 => "Partial Content",
+	207 => "Multi-Status",			# [RFC4918]
+	208 => "Already Reported",		# [RFC5842]
+	226 => "IM Used",			# [RFC3229] instance-manipulations applied to the current instance
 	300 => "Multiple Choices",
 	301 => "Moved Permanently",
 	302 => "Found",
 	303 => "See Other",
 	304 => "Not Modified",
+	305 => "Use Proxy",
+	306 => "Switch Proxy",			# (reserved)
 	307 => "Temporary Redirect",
 	308 => "Permanent Redirect",
 	400 => "Bad Request",
 	401 => "Unauthorized",
+	402 => "Payment Required",
 	403 => "Forbidden",
 	404 => "Not Found",
 	405 => "Method Not Allowed",
@@ -51,10 +80,16 @@ $statusCodes = {
 	415 => "Unsupported Media Type",
 	416 => "Range Not Satisfiable",
 	417 => "Expectation Failed",
+	418 => "I'm a Teapot",
+	421 => "Misdirected Request",
+	422 => "Unprocessable Content",		# [RFC-ietf-httpbis-semantics, Section 15.5.21]
+	423 => "Locked",			# [RFC4918]
+	424 => "Failed Dependency",		# [RFC4918]
+	425 => "Too Early",			# [RFC8470]
 	426 => "Upgrade Required",
-	428 => "Precondition Required",
-	429 => "Too Many Requests",
-	431 => "Request Header Fields Too Large",
+	428 => "Precondition Required",		# [RFC6585]
+	429 => "Too Many Requests",		# [RFC6585]
+	431 => "Request Header Fields Too Large",	# [RFC6585]
 	451 => "Unavailable For Legal Reasons",
 	500 => "Internal Server Error",
 	501 => "Not Implemented",
@@ -62,8 +97,78 @@ $statusCodes = {
 	503 => "Service Unavailable",
 	504 => "Gateway Timeout",
 	505 => "HTTP Version Not Supported",
-	511 => "Network Authentication Required"
+	506 => "Variant Also Negotiate",	# [RFC2295]
+	507 => "Insufficient Storage",		# [RFC4918]
+	508 => "Loop Detected",			# [RFC5842]
+	510 => "Not Extended (OBSOLETED)",	# [RFC2774][status-change-http-experiments-to-historic]
+	511 => "Network Authentication Required"	# [RFC6585]
 }
+
+# Parse command-line arguments - jhg
+# References:	https://code-maven.com/argv-the-command-line-arguments-in-ruby
+#		https://www.codecademy.com/article/ruby-command-line-argv
+#		https://ruby-doc.org/core-1.9.3/ARGF.html#method-i-argv
+#		https://ruby-doc.com/docs/ProgrammingRuby/html/rubyworld.html
+#		https://www.thoughtco.com/command-line-arguments-2908191
+# Alternative options
+#	OptionParser class	https://ruby-doc.org/stdlib-2.4.2/libdoc/optparse/rdoc/OptionParser.html
+#	GetoptLong
+$programName = $0
+
+puts "	Starting #{version} of #{programName} as User-Agent #{userAgent}." if $verbose
+puts "	Will attempt to listen on port #{port}; buffer length set to: #{bufferLength}." if $verbose
+puts "	Running in verbose / debug mode." if $verbose
+
+begin
+	require 'optparse'
+	Options = Struct.new(:name)
+	class Parser
+	  def self.parse(options)
+	    args = Options.new("world")
+
+	    opt_parser = OptionParser.new do |opts|
+	      opts.banner = "Usage: #{programName} [options]"
+
+	      opts.on("-nNAME", "--name=NAME", "Name to say hello to") do |n|
+	        args.name = n
+	      end
+
+	      opts.on("-h", "--help", "Prints this help") do
+	        puts opts
+	        exit
+	      end
+	    end
+
+	    opt_parser.parse!(options)
+	    return args
+	  end
+	end
+	options = Parser.parse %w[--help]
+rescue LoadError
+  # The 'a' gem is not installed
+  puts "	OptionParser gem is not available - ignoring command-line arguments." if $verbose
+end
+
+if ARGV.length > 0
+	input_array = ARGV
+	first_arg, *the_rest = ARGV
+	puts input_array.length if $verbose
+	puts input_array.to_s if $verbose
+	puts first_arg if $verbose
+	puts the_rest if $verbose
+	# puts "--> Response code: #{response.code}" if $verbose
+	if $verbose
+		for i in 0 ... ARGV.length
+   			puts "#{i} #{ARGV[i]}"
+		end
+		ARGV.each do|a|
+		  puts "Argument: #{a}"
+		end
+	end
+	
+	# If a number, convert to a number
+	puts ARGV[x].to_i + ARGV[1].to_i
+end
 
 server = TCPServer.open($port)
 puts "Listening on #{$port}, press ^C to exit..."

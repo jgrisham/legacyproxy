@@ -377,9 +377,9 @@ def sendResponse(client, code, headers = {}, body = nil, requestHeaders = nil)
 	client.close
 end
 
-def sendError(client, message)
+def sendError(client, message, statusCode=503)
 	response = "<html>\n<head>\n<title>Proxy Error</title>\n</head>\n\n<body>\n#{message}\n</body>"
-	sendResponse(client, 503, { "Content-Type" => "text/html" }, response)
+	sendResponse(client, statusCode, { "Content-Type" => "text/html" }, response)
 end
 
 def sendProxyContent(client, url, verb, headers, body)
@@ -508,15 +508,17 @@ loop {
 
 		if verb == "CONNECT" then
 			#sendError(client, "Invalid request")
-			sendError(client, "HTTP Version Not Supported")
+			sendError(client, "HTTP Version Not Supported", 505)
 			puts "--> Invalid verb (client / CONNECT)"
-			return
+			# return
+		elsif
+			puts "--> #{clientAddress[2]}:#{clientAddress[1]} #{verb} #{url}"
+
+			puts "Request Headers: '#{headers}'" if $verbose
+			puts "Request Body: '#{body}'" if $verbose && body.nil? == false
+			sendProxyContent(client, url, verb, headers, body)
 		end
 
-		puts "--> #{clientAddress[2]}:#{clientAddress[1]} #{verb} #{url}"
 
- 		puts "Request Headers: '#{headers}'" if $verbose
- 		puts "Request Body: '#{body}'" if $verbose && body.nil? == false
-		sendProxyContent(client, url, verb, headers, body)
 	end
 }

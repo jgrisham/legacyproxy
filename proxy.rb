@@ -120,16 +120,17 @@ puts "	Will attempt to listen on port #{$port}; buffer length set to: #{$bufferL
 puts "	Running in verbose / debug mode." if $verbose
 
 begin
+	# Load OptionParser module
 	require 'optparse'
-	Options = Struct.new(:name)
+	# Options = Struct.new(:name)
 	class Parser
 	  def self.parse(options)
-	    args = Options.new("world")
+	    # args = Options.new("world")
 
 	    opt_parser = OptionParser.new do |opts|
 	      opts.banner = "Usage: #{$programName} [options]"
 
-	      opts.on("-nNAME", "--name=NAME", "Name to say hello to") do |n|
+	      opts.on("-pPORT", "--port=PORT", "TCP port to monitor for incoming requests") do |n|
 	        args.name = n
 	      end
 
@@ -137,13 +138,26 @@ begin
 	        puts opts
 	        exit
 	      end
+		    
+	      opts.on("-v", "--[no-]verbose", "Run verbosely") do |v|
+	 	   options[:verbose] = v
+	      end
+		    
+		  
+		#def boolean_verbose_option(parser)
+		     # Boolean switch.
+		#      parser.on("-v", "--[no-]verbose", "Run verbosely") do |v|
+		#	self.verbose = v
+		#      end
+		# end
+		    
 	    end
 
-	    opt_parser.parse!(options)
+	    opt_parser.parse!(ARGV)
 	    return args
 	  end
 	end
-	options = Parser.parse %w[--help]
+	# options = Parser.parse %w[--help]
 rescue LoadError
   # The 'a' gem is not installed
   puts "	OptionParser gem is not available - ignoring command-line arguments." if $verbose

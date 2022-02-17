@@ -26,7 +26,7 @@ $bufferLength = 4096
 # $verbose = false
 $verbose = true
 $userAgent = 'LegacyProxy/1.0'
-$version = 'v1.0.1a11'	# For debug / change management purposes only ... not normally seen by user
+$version = 'v1.0.1a12'	# For debug / change management purposes only ... not normally seen by user
 $programName = $0		# Mostly to help me remember the syntax - jhg
 
 $entityCoder = HTMLEntities.new
@@ -398,9 +398,20 @@ def sendProxyContent(client, url, verb, headers, body)
 			puts ""
 			puts "    --> URL: #{url}"
 			puts "    --> URI: #{uri}"
+			puts "    -->            client: #{client}"
 			puts "    --> HTTP    send verb: #{verb}"
+			puts "    --> URI instance   methods: #{uri.instance_methods}"
 			puts "    --> URI instance variables: #{uri.instance_variables}"
 			puts "    --> URI        scheme: #{uri.scheme}"
+			puts "    --> URI          user: #{uri.user}"
+			puts "    --> URI      password: #{uri.password}"
+			puts "    --> URI          host: #{uri.host}"
+			puts "    --> URI          port: #{uri.port}"
+			puts "    --> URI          path: #{uri.path}"
+			puts "    --> URI         query: #{uri.query}"
+			puts "    --> URI        opaque: #{uri.opaque}"
+			puts "    --> URI      fragment: #{uri.fragment}"
+			puts "    --> URI        parser: #{uri.parser}"
 			puts "    --> URI   request_uri: #{uri.request_uri}"
 			puts "    --> HTTP send headers: #{headers}"
 			puts "    --> HTTP    send body: #{body}"

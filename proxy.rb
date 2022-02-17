@@ -472,6 +472,7 @@ loop {
 				break if data.bytesize < $bufferLength
 			end
 		end
+		puts "Request: #{request.to_s}" if $verbose
 
 		requestHeaders, body = request.split("\r\n\r\n", 2)
 		body = nil if body.length == 0

@@ -25,7 +25,7 @@ $bufferLength = 4096
 # $verbose = false
 $verbose = true
 $userAgent = 'LegacyProxy/1.0'
-$version = 'v1.0.1b' # For debug / change management purposes only ... not normally seen by user
+$version = 'v1.0.1a' # For debug / change management purposes only ... not normally seen by user
 
 $entityCoder = HTMLEntities.new
 
@@ -130,22 +130,28 @@ puts "	Running in verbose / debug mode." if $verbose
 begin
 	# Load OptionParser module
 	require 'optparse'
+	class ProcessScriptArguments
+		ClassVersion = '1.0.0'
 
-	class ScriptOptions
+		class ScriptOptions
 
-		# Not sure what this does - jhg
-		# https://www.rubyguides.com/2018/11/attr_accessor/
-		# Instance variables - start with '@'
-		# Automatically creates 'getter' and 'setter' methods to read instance variables from instances of this object
-		attr_accessor :port, :bufferLength, :verbose
+			# Not sure what this does - jhg
+			# https://www.rubyguides.com/2018/11/attr_accessor/
+			# Instance variables - start with '@'
+			# Automatically creates 'getter' and 'setter' methods to read instance variables from instances of this object
+			attr_accessor :port, :bufferLength, :verbose, :userAgent
 
-		def initialize
-			# Set initial variable values
-			self.port = 8080
-			self.verbose = false
-		end # method def initialize
+			def initialize
+				# Set initial variable values
+				self.port = 8080
+				self.verbose = true
+				self.bufferLength = 4096
+				self.userAgent = 'LegacyProxy/1.0'
+			end # method def initialize
+		end # class ScriptOptions
 
-		def define_options(parser)
+		def self.define_options(parser)
+			@parser ||= OptionParser.new do |parser|
 			parser.banner = "Usage: #{$programName} [options]"
 			parser.seperator ""
 			parser.seperator "Specific options:"
@@ -167,6 +173,7 @@ begin
 				puts Version
 				exit
 			end
+		end # do
 		end # method def define_options(parser)
 
 		# parser.on("--type [TYPE]", [:text, :binary, :auto],
@@ -184,22 +191,27 @@ begin
 				self.port = p
 			end
 		end # method def specify_listening_port(parser)
-	end # class ScriptOptions
 
-	#
-	# Return a structure describing the options.
-	#
-	def parse(args)
-	  # The options specified on the command line will be collected in
-	  # *options*.
-  
-	  @options = ScriptOptions.new
-	  @args = OptionParser.new do |parser|
-		@options.define_options(parser)
-		parser.parse!(args) # self-modifying 'dangerous' method?
-	  end
-	  @options
-	end
+		#
+		# Return a structure describing the options.
+		#
+		def parse(args)
+			# The options specified on the command line will be collected in
+			# *options*.
+		
+			@options = ScriptOptions.new
+			# @args = OptionParser.new do |parser|
+			# 	@options.define_options(parser)
+			# 	parser.parse!(args) # self-modifying 'dangerous' method?
+			#   end
+			define_options.parse! args
+			@options
+		end
+
+		attr_reader :parser, :options
+
+	
+	end # class ProcessScriptArguments
 
 	# get list of instance variables
 	# machine.instance_variables
@@ -235,10 +247,10 @@ begin
 	end # class Parser
 	# options1 = Parser.parse %w[--help]
 	# options1 = Parser.parse ARGV
-	options2 = ScriptOptions.parse ARGV
+	options2 = ProcessScriptArguments.parse ARGV
 rescue LoadError
-  # The 'a' gem is not installed
-  puts "	OptionParser gem is not available - ignoring command-line arguments." if $verbose
+	# The 'optparse' gem is not installed
+	puts "	OptionParser gem is not available - ignoring command-line arguments." if $verbose
 end
 
 if ARGV.length > 0

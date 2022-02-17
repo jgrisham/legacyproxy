@@ -26,7 +26,7 @@ $bufferLength = 4096
 # $verbose = false
 $verbose = true
 $userAgent = 'LegacyProxy/1.0'
-$version = 'v1.0.1a12'	# For debug / change management purposes only ... not normally seen by user
+$version = 'v1.0.1a13'	# For debug / change management purposes only ... not normally seen by user
 $programName = $0		# Mostly to help me remember the syntax - jhg
 
 $entityCoder = HTMLEntities.new
@@ -128,157 +128,160 @@ $statusCodes = {				# https://www.iana.org/assignments/http-status-codes/http-st
 $programName = $0
 
 
-# if ARGV.length > 0 # Don't bother with any of this if there are no command-line arguments!
+if ARGV.length > 0 # Don't bother with any of this if there are no command-line arguments!
 
-begin # Parse command-line options using 'OptionParser' module
-	# Load OptionParser module
-	require 'optparse'				
-	class ProcessScriptArguments	# Wrap ScriptOptions class with methods
-		ClassVersion = '1.0.0'
+	begin # Parse command-line options using 'OptionParser' module
+		# Load OptionParser module
+		require 'optparse'				
+		class ProcessScriptArguments	# Wrap ScriptOptions class with methods
+			ClassVersion = '1.0.0'
 
-		class ScriptOptions			# Data object
-			# Instance variables - start with '@'
-			# Automatically creates 'getter' and 'setter' methods to read instance variables from instances of this object
-			attr_accessor :port, :bufferLength, :verbose, :userAgent
+			class ScriptOptions			# Data object
+				# Instance variables - start with '@'
+				# Automatically creates 'getter' and 'setter' methods to read instance variables from instances of this object
+				attr_accessor :port, :bufferLength, :verbose, :userAgent
 
-			def initialize
-				# Set initial variable values
-				self.port = $port
-				self.verbose = $verbose
-				self.bufferLength = $bufferLength
-				self.userAgent = $userAgent
-			end # method def initialize
-		end # class ScriptOptions
+				def initialize
+					# Set initial variable values
+					self.port = $port
+					self.verbose = $verbose
+					self.bufferLength = $bufferLength
+					self.userAgent = $userAgent
+				end # method def initialize
+			end # class ScriptOptions
 
-		def self.define_options #(parser)	# main class method
-			@parser ||= OptionParser.new do |parser|
-				parser.banner = "Usage: #{$programName} [options]"
-				parser.separator ""
-				parser.separator "Specific options:"
+			def self.define_options #(parser)	# main class method
+				@parser ||= OptionParser.new do |parser|
+					parser.banner = "Usage: #{$programName} [options]"
+					parser.separator ""
+					parser.separator "Specific options:"
 
-				# add additional options
-				specify_listening_port(parser)
-				boolean_verbose_option(parser)
+					# add additional options
+					specify_listening_port(parser)
+					boolean_verbose_option(parser)
 
-				parser.separator ""
-				parser.separator "Common options:"
+					parser.separator ""
+					parser.separator "Common options:"
 
-				# No argument, shows at tail. This will print an options summary.
-				parser.on_tail("-h", "--help", "Show this message") do
-					puts parser
-					exit
+					# No argument, shows at tail. This will print an options summary.
+					parser.on_tail("-h", "--help", "Show this message") do
+						puts parser
+						exit
+					end
+					# Print current script version
+					parser.on_tail("-V", "--version", "Show version") do
+						puts $version
+						exit
+					end
+				end # do
+			end # method def define_options(parser)
+
+			# parser.on("--type [TYPE]", [:text, :binary, :auto],
+			def self.boolean_verbose_option(parser)					# option: --verbose
+				# Boolean switch.
+				parser.on("-v", "--[no-]verbose", "Run verbosely") do |v|
+					@options.verbose = v
 				end
-				# Print current script version
-				parser.on_tail("-V", "--version", "Show version") do
-					puts $version
-					exit
+			end # method def boolean_verbose_option(parser)
+
+			def self.specify_listening_port(parser)					# option: --port PORTNUM
+				# puts ARGV[x].to_i + ARGV[1].to_i
+				# # TODO: Need beter error catching in case this is not providded as a number
+				# (just ignore if not a number??)
+				parser.on("-p PORTNUM", "--port=PORTNUM", Integer, "Incoming TCP port") do |p|
+					# self.port = p.to_i
+					@options.port = p
+				rescue
 				end
-			end # do
-		end # method def define_options(parser)
+			end # method def specify_listening_port(parser)
 
-		# parser.on("--type [TYPE]", [:text, :binary, :auto],
-		def self.boolean_verbose_option(parser)					# option: --verbose
-			# Boolean switch.
-			parser.on("-v", "--[no-]verbose", "Run verbosely") do |v|
-				@options.verbose = v
+			def self.parse(args)					# Return a structure describing the options.
+				# The options specified on the command line will be collected in
+				# *options*.
+			
+				@options = ScriptOptions.new
+				#@args = OptionParser.new do |parser|
+				# 	@options.define_options(parser)
+				# 	parser.parse!(args) # self-modifying 'dangerous' method?
+				#end
+				define_options.parse! args
+				@options
 			end
-		end # method def boolean_verbose_option(parser)
 
-		def self.specify_listening_port(parser)					# option: --port PORTNUM
-			# puts ARGV[x].to_i + ARGV[1].to_i
-			# # TODO: Need beter error catching in case this is not providded as a number
-			# (just ignore if not a number??)
-			parser.on("-p PORTNUM", "--port=PORTNUM", Integer, "Incoming TCP port") do |p|
-				# self.port = p.to_i
-				@options.port = p
-			rescue
-			end
-		end # method def specify_listening_port(parser)
-
-		def self.parse(args)					# Return a structure describing the options.
-			# The options specified on the command line will be collected in
-			# *options*.
+			attr_reader :parser, :options			# Allow external access to properties
 		
-			@options = ScriptOptions.new
-			#@args = OptionParser.new do |parser|
-			# 	@options.define_options(parser)
-			# 	parser.parse!(args) # self-modifying 'dangerous' method?
-			#end
-			define_options.parse! args
-			@options
-		end
+		end # class ProcessScriptArguments
 
-		attr_reader :parser, :options			# Allow external access to properties
-	
-	end # class ProcessScriptArguments
+		# Options = Struct.new(:name)
+		class Parser					# Alternative implemention - not in use 2022-02-17
+			# Defines 'parse' method of class 'Parser'?
+		def self.parse(options)
+			# args = Options.new("world")
 
-	# Options = Struct.new(:name)
-	class Parser					# Alternative implemention - not in use 2022-02-17
-		# Defines 'parse' method of class 'Parser'?
-	  def self.parse(options)
-		# args = Options.new("world")
+			# new copy of 'OptionParser' for each ??
+			opt_parser = OptionParser.new do |opts|
+			opts.banner = "Usage: #{$programName} [options]"
 
-		  # new copy of 'OptionParser' for each ??
-		opt_parser = OptionParser.new do |opts|
-		  opts.banner = "Usage: #{$programName} [options]"
+			opts.on("-pPORT", "--port=PORT", Integer, "TCP port to monitor for incoming requests") do |n|
+				args.name = n
+			end
 
-		  opts.on("-pPORT", "--port=PORT", Integer, "TCP port to monitor for incoming requests") do |n|
-			args.name = n
-		  end
+			opts.on("-h", "--help", "Prints this help") do
+				puts opts
+				exit
+			end
+				
+			opts.on("-v", "--[no-]verbose", "Run verbosely") do |v|
+			options[:verbose] = v
+			end
+				
+			end #opt_parser
 
-		  opts.on("-h", "--help", "Prints this help") do
-			puts opts
-			exit
-		  end
-			
-		  opts.on("-v", "--[no-]verbose", "Run verbosely") do |v|
-	 	   options[:verbose] = v
-		  end
-			
-		end #opt_parser
+			opt_parser.parse!(ARGV)
+			return args
+		end # def self.parse
+		end # class Parser
 
-		opt_parser.parse!(ARGV)
-		return args
-	  end # def self.parse
-	end # class Parser
+		# options1 = Parser.parse %w[--help]			# Test with dummy data
+		# options1 = Parser.parse ARGV
+		$options2 = ProcessScriptArguments.parse ARGV	# Actually parse command-line options
 
-	# options1 = Parser.parse %w[--help]			# Test with dummy data
-	# options1 = Parser.parse ARGV
-	$options2 = ProcessScriptArguments.parse ARGV	# Actually parse command-line options
-
-	# Need to actually set global variables based on options now
-	$port = $options2.port
-	$verbose = $options2.verbose
-	$bufferLength = $options2.bufferLength
-	$userAgent = $options2.userAgent
-	# Because I did that, does 'options2' actually need to be global? (i.e. '$options2')
-#rescue LoadError
-rescue # let's just ignore _all_ errors from the above 'begin' block
-	# The 'optparse' gem is not installed
-	puts "	OptionParser gem is not available - ignoring command-line arguments." if $verbose
-end
-
-# end	# end if ARGV.length > 0
-
-if ARGV.length > 0
-	input_array = ARGV
-	first_arg, *the_rest = ARGV
-	puts input_array.length if $verbose
-	puts input_array.to_s if $verbose
-	puts first_arg if $verbose
-	puts the_rest if $verbose
-	# puts "--> Response code: #{response.code}" if $verbose
-	if $verbose
-		for i in 0 ... ARGV.length
-   			puts "#{i} #{ARGV[i]}"
-		end
-		ARGV.each do|a|
-		  puts "Argument: #{a}"
-		end
+		# Need to actually set global variables based on options now
+		$port = $options2.port
+		$verbose = $options2.verbose
+		$bufferLength = $options2.bufferLength
+		$userAgent = $options2.userAgent
+		# Because I did that, does 'options2' actually need to be global? (i.e. '$options2')
+	#rescue LoadError
+	rescue # let's just ignore _all_ errors from the above 'begin' block
+		# The 'optparse' gem is not installed
+		puts "	OptionParser gem is not available - ignoring command-line arguments." if $verbose
 	end
-	
+
+	{ # show verbose debugging info
+		input_array = ARGV
+		first_arg, *the_rest = ARGV
+		puts input_array.length if $verbose
+		puts input_array.to_s if $verbose
+		puts first_arg if $verbose
+		puts the_rest if $verbose
+		# puts "--> Response code: #{response.code}" if $verbose
+		if $verbose
+			for i in 0 ... ARGV.length
+				puts "#{i} #{ARGV[i]}"
+			end
+			ARGV.each do|a|
+			puts "Argument: #{a}"
+			end
+		end
+	}	
 	# If a number, convert to a number
 	# puts ARGV[x].to_i + ARGV[1].to_i
+
+end	# end if ARGV.length > 0
+
+if ARGV.length > 0
+
 end
 
 puts "	Starting #{$version} of #{$programName} as User-Agent #{$userAgent}." if $verbose

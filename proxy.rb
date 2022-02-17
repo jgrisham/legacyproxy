@@ -500,10 +500,18 @@ loop {
 
 		if urlRequest.length != 3 then
 			sendError(client, "Invalid request")
+			puts "--> Invalid request (client)"
 			return
 		end
 		verb = urlRequest[0]
 		url = urlRequest[1]
+
+		if verb == "CONNECT" then
+			#sendError(client, "Invalid request")
+			sendError(client, "HTTP Version Not Supported")
+			puts "--> Invalid verb (client / CONNECT)"
+			return
+		end
 
 		puts "--> #{clientAddress[2]}:#{clientAddress[1]} #{verb} #{url}"
 

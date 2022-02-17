@@ -114,6 +114,13 @@ $statusCodes = {				# https://www.iana.org/assignments/http-status-codes/http-st
 #	OptionParser class	https://ruby-doc.org/stdlib-2.4.2/libdoc/optparse/rdoc/OptionParser.html
 #1						https://ruby-doc.org/stdlib-2.5.5/libdoc/optparse/rdoc/OptionParser.html
 #	GetoptLong
+
+# Also taken from:
+# https://gist.github.com/Neurogami/c27443536227bdef8f84c923bdc24820
+# https://bugs.ruby-lang.org/issues/12323
+# This is based on code copied from https://bugs.ruby-lang.org/issues/12323
+# to replace non-working example given in the rdocs for the OptionParser class
+
 $programName = $0
 
 puts "	Starting #{$version} of #{$programName} as User-Agent #{$userAgent}." if $verbose
@@ -227,7 +234,9 @@ begin
 		return args
 	  end
 	end
-	# options = Parser.parse %w[--help]
+	# options1 = Parser.parse %w[--help]
+	options1 = Parser.parse ARGV
+	options2 = OptparseExample.parse ARGV
 rescue LoadError
   # The 'a' gem is not installed
   puts "	OptionParser gem is not available - ignoring command-line arguments." if $verbose

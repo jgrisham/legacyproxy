@@ -511,7 +511,7 @@ loop {
 			sendError(client, "HTTP Version Not Supported", 505)
 			# puts "--> Invalid verb (client / CONNECT)" if $verbose
 			# return
-		elsif
+		else
 			
 			puts " ---> requestHeaders: #{requestHeaders.to_s}" if $verbose
 

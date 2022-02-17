@@ -25,7 +25,7 @@ $bufferLength = 4096
 # $verbose = false
 $verbose = true
 $userAgent = 'LegacyProxy/1.0'
-$version = 'v1.0.1a3' # For debug / change management purposes only ... not normally seen by user
+$version = 'v1.0.1a4' # For debug / change management purposes only ... not normally seen by user
 
 $entityCoder = HTMLEntities.new
 
@@ -150,30 +150,30 @@ begin
 			end # method def initialize
 		end # class ScriptOptions
 
-		def self.define_options(parser)
+		def self.define_options #(parser)
 			@parser ||= OptionParser.new do |parser|
-			parser.banner = "Usage: #{$programName} [options]"
-			parser.seperator ""
-			parser.seperator "Specific options:"
+				parser.banner = "Usage: #{$programName} [options]"
+				parser.seperator ""
+				parser.seperator "Specific options:"
 
-			# add additional options
-			specify_listening_port(parser)
-			boolean_verbose_option(parser)
+				# add additional options
+				specify_listening_port(parser)
+				boolean_verbose_option(parser)
 
-			parser.separator ""
-			parser.separator "Common options:"
+				parser.separator ""
+				parser.separator "Common options:"
 
-			# No argument, shows at tail. This will print an options summary.
-			parser.on_tail("-h", "--help", "Show this message") do
-				puts parser
-				exit
-			end
-			# Print current script version
-			parser.on_tail("-V", "--version", "Show version") do
-				puts Version
-				exit
-			end
-		end # do
+				# No argument, shows at tail. This will print an options summary.
+				parser.on_tail("-h", "--help", "Show this message") do
+					puts parser
+					exit
+				end
+				# Print current script version
+				parser.on_tail("-V", "--version", "Show version") do
+					puts Version
+					exit
+				end
+			end # do
 		end # method def define_options(parser)
 
 		# parser.on("--type [TYPE]", [:text, :binary, :auto],

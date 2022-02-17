@@ -25,7 +25,7 @@ $bufferLength = 4096
 # $verbose = false
 $verbose = true
 $userAgent = 'LegacyProxy/1.0'
-$version = 'v1.0.1a4' # For debug / change management purposes only ... not normally seen by user
+$version = 'v1.0.1a5' # For debug / change management purposes only ... not normally seen by user
 
 $entityCoder = HTMLEntities.new
 
@@ -200,11 +200,11 @@ begin
 			# *options*.
 		
 			@options = ScriptOptions.new
-			@args = OptionParser.new do |parser|
-			 	@options.define_options(parser)
-			 	parser.parse!(args) # self-modifying 'dangerous' method?
-			end
-			# define_options.parse! args
+			#@args = OptionParser.new do |parser|
+			# 	@options.define_options(parser)
+			# 	parser.parse!(args) # self-modifying 'dangerous' method?
+			#end
+			define_options.parse! args
 			@options
 		end
 

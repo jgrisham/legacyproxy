@@ -26,7 +26,7 @@ $bufferLength = 4096
 # $verbose = false
 $verbose = true
 $userAgent = 'LegacyProxy/1.0'
-$version = 'v1.0.1a13'	# For debug / change management purposes only ... not normally seen by user
+$version = 'v1.0.1a14'	# For debug / change management purposes only ... not normally seen by user
 $programName = $0		# Mostly to help me remember the syntax - jhg
 
 $entityCoder = HTMLEntities.new

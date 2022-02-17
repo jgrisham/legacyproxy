@@ -25,7 +25,7 @@ $bufferLength = 4096
 # $verbose = false
 $verbose = true
 $userAgent = 'LegacyProxy/1.0'
-$version = 'v1.0.1a7' # For debug / change management purposes only ... not normally seen by user
+$version = 'v1.0.1a8' # For debug / change management purposes only ... not normally seen by user
 
 $entityCoder = HTMLEntities.new
 
@@ -123,9 +123,7 @@ $statusCodes = {				# https://www.iana.org/assignments/http-status-codes/http-st
 
 $programName = $0
 
-puts "	Starting #{$version} of #{$programName} as User-Agent #{$userAgent}." if $verbose
-puts "	Will attempt to listen on port #{$port}; buffer length set to: #{$bufferLength}." if $verbose
-puts "	Running in verbose / debug mode." if $verbose
+
 
 begin
 	# Load OptionParser module
@@ -247,7 +245,7 @@ begin
 	end # class Parser
 	# options1 = Parser.parse %w[--help]
 	# options1 = Parser.parse ARGV
-	options2 = ProcessScriptArguments.parse ARGV
+	$options2 = ProcessScriptArguments.parse ARGV
 rescue LoadError
 	# The 'optparse' gem is not installed
 	puts "	OptionParser gem is not available - ignoring command-line arguments." if $verbose
@@ -273,6 +271,14 @@ if ARGV.length > 0
 	# If a number, convert to a number
 	# puts ARGV[x].to_i + ARGV[1].to_i
 end
+
+puts "	Starting #{$version} of #{$programName} as User-Agent #{$userAgent}." if $verbose
+puts "	Will attempt to listen on port #{$port}; buffer length set to: #{$bufferLength}." if $verbose
+puts "	Running in verbose / debug mode." if $verbose
+puts "   Options2 verbose status: #{$options2.verbose}"
+puts "   Options2 port: #{$options2.port}"
+puts "   Global port:   #{$port}"
+
 
 server = TCPServer.open($port)
 puts "Listening on #{$port}, press ^C to exit..."

@@ -115,8 +115,8 @@ $statusCodes = {				# https://www.iana.org/assignments/http-status-codes/http-st
 #	GetoptLong
 $programName = $0
 
-puts "	Starting #{version} of #{programName} as User-Agent #{userAgent}." if $verbose
-puts "	Will attempt to listen on port #{port}; buffer length set to: #{bufferLength}." if $verbose
+puts "	Starting #{$version} of #{$programName} as User-Agent #{$userAgent}." if $verbose
+puts "	Will attempt to listen on port #{$port}; buffer length set to: #{$bufferLength}." if $verbose
 puts "	Running in verbose / debug mode." if $verbose
 
 begin
@@ -127,7 +127,7 @@ begin
 	    args = Options.new("world")
 
 	    opt_parser = OptionParser.new do |opts|
-	      opts.banner = "Usage: #{programName} [options]"
+	      opts.banner = "Usage: #{$programName} [options]"
 
 	      opts.on("-nNAME", "--name=NAME", "Name to say hello to") do |n|
 	        args.name = n

@@ -25,7 +25,7 @@ $bufferLength = 4096
 # $verbose = false
 $verbose = true
 $userAgent = 'LegacyProxy/1.0'
-$version = 'v1.0.1a6' # For debug / change management purposes only ... not normally seen by user
+$version = 'v1.0.1a7' # For debug / change management purposes only ... not normally seen by user
 
 $entityCoder = HTMLEntities.new
 
@@ -170,7 +170,7 @@ begin
 				end
 				# Print current script version
 				parser.on_tail("-V", "--version", "Show version") do
-					puts Version
+					puts $version
 					exit
 				end
 			end # do
@@ -180,7 +180,7 @@ begin
 		def self.boolean_verbose_option(parser)
 			# Boolean switch.
 			parser.on("-v", "--[no-]verbose", "Run verbosely") do |v|
-			  self.verbose = v
+				@options.verbose = v
 			end
 		end # method def boolean_verbose_option(parser)
 
@@ -188,7 +188,7 @@ begin
 			# puts ARGV[x].to_i + ARGV[1].to_i
 			parser.on("-p PORT", "--port=PORT", Integer, "Incoming TCP port") do |p|
 				# self.port = p.to_i
-				self.port = p
+				@options.port = p
 			end
 		end # method def specify_listening_port(parser)
 

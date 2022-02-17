@@ -258,7 +258,7 @@ if ARGV.length > 0 # Don't bother with any of this if there are no command-line 
 		puts "	OptionParser gem is not available - ignoring command-line arguments." if $verbose
 	end
 
-	{ # show verbose debugging info
+	#{ # show verbose debugging info
 		input_array = ARGV
 		first_arg, *the_rest = ARGV
 		puts input_array.length if $verbose
@@ -274,15 +274,13 @@ if ARGV.length > 0 # Don't bother with any of this if there are no command-line 
 			puts "Argument: #{a}"
 			end
 		end
-	}	
+	#}	
 	# If a number, convert to a number
 	# puts ARGV[x].to_i + ARGV[1].to_i
 
 end	# end if ARGV.length > 0
 
-if ARGV.length > 0
 
-end
 
 puts "	Starting #{$version} of #{$programName} as User-Agent #{$userAgent}." if $verbose
 puts "	Will attempt to listen on port #{$port}; buffer length set to: #{$bufferLength}." if $verbose

@@ -422,7 +422,7 @@ def sendProxyContent(client, url, verb, headers, body)
 			puts "    --> URI        opaque: #{uri.opaque}"
 			puts "    --> URI      fragment: #{uri.fragment}"	# e.g. page anchor
 			puts "    --> URI        parser: #{uri.parser}"		# internal use
-			puts "    --> URI     arg_check: #{uri.arg_check}"
+			# puts "    --> URI     arg_check: #{uri.arg_check}"
 			puts "    --> URI   request_uri: #{uri.request_uri}"
 			puts "    --> HTTP send headers: #{headers}"
 			puts "    --> HTTP    send body: #{body}"

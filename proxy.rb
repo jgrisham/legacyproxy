@@ -25,7 +25,7 @@ $bufferLength = 4096
 # $verbose = false
 $verbose = true
 $userAgent = 'LegacyProxy/1.0'
-$version = 'v1.0.1a5' # For debug / change management purposes only ... not normally seen by user
+$version = 'v1.0.1a6' # For debug / change management purposes only ... not normally seen by user
 
 $entityCoder = HTMLEntities.new
 
@@ -153,8 +153,8 @@ begin
 		def self.define_options #(parser)
 			@parser ||= OptionParser.new do |parser|
 				parser.banner = "Usage: #{$programName} [options]"
-				parser.seperator ""
-				parser.seperator "Specific options:"
+				parser.separator ""
+				parser.separator "Specific options:"
 
 				# add additional options
 				specify_listening_port(parser)

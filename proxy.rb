@@ -26,7 +26,7 @@ $bufferLength = 4096
 # $verbose = false
 $verbose = true
 $userAgent = 'LegacyProxy/1.0'
-$version = 'v1.0.1a18'	# For debug / change management purposes only ... not normally seen by user
+$version = 'v1.0.1a19'	# For debug / change management purposes only ... not normally seen by user
 $programName = $0		# Mostly to help me remember the syntax - jhg
 
 $entityCoder = HTMLEntities.new
@@ -500,8 +500,8 @@ loop {
 
 		# puts " ---> urlRequest: #{urlRequest.to_s}"
 
-		headers['x-forwarded-for'] = clientAddress[3]
-		headers['via'] = "HTTP/1.1 #{$userAgent}"
+		# headers['x-forwarded-for'] = clientAddress[3]
+		# headers['via'] = "HTTP/1.1 #{$userAgent}"
 
 		if urlRequest.length != 3 then
 			sendError(client, "Invalid request")

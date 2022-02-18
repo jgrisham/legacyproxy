@@ -26,7 +26,7 @@ $bufferLength = 4096
 # $verbose = false
 $verbose = true
 $userAgent = 'LegacyProxy/1.0'
-$version = 'v1.0.1a15'	# For debug / change management purposes only ... not normally seen by user
+$version = 'v1.0.1a16'	# For debug / change management purposes only ... not normally seen by user
 $programName = $0		# Mostly to help me remember the syntax - jhg
 
 $entityCoder = HTMLEntities.new
@@ -487,7 +487,7 @@ loop {
 			end
 			key, value = h.split(/:\s*/)
 			next if value.nil?
-			next if key.downcase == "Upgrade-Insecure-Requests"
+			next if key == "Upgrade-Insecure-Requests"
 			key = key.downcase
 			if headers.has_key?(key) then
 				headers[key] += ", #{value}"

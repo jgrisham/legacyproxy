@@ -1,3 +1,20 @@
+## HC SVNT DRACONES
+**As of 2022-02-18, this _seems_ to work for _very_ old browsers ... specifically, those that don't support the HTTP `CONNECT` verb.**
+
+At the very least, it appear to successfully proxy non-secure _HTTP_ traffic, including files, without incident.
+
+For most people: if this doesn't work straight off for you, you're probably better off trying something else first _(e.g. tenox7/wrp, atauenis/WebOne, Jonathanalland.com/legacy-mac-proxy at https://jonathanalland.com/old-osx-projects.html, or something involving `squid`)_.
+
+## Tl;dr: Run, while you still can.
+
+If I ever do something with this _(that seems useful and stable)_, I'll submit it back to the original (zenwheel/legacyproxy) with a PR. - Jim
+
+P.S. There is newer stuff _(including [tons of notes](https://github.com/jgrisham/legacyproxy/blob/testing_2022-02-16/proxy.rb))_ in the `testing_2022-02-16` branch of this fork.
+
+<hr />
+
+<details><summary>(original content of this `README.md`)</summary>
+
 The internet has changed a lot in the past decade or two and has left some of the vintage computers that built it behind.  This is an HTTP proxy that can be used to access modern content on older browsers.
 
 ### Installation
@@ -38,3 +55,5 @@ In the browser you can enter a URL, such as [http://www.apple.com/](http://www.a
 ### Changes
 
 I haven't tried any other old browsers or computers, but hopefully the proxy can be extended to handle other tweaks in the future, please submit PRs if you extend it!
+
+</details>

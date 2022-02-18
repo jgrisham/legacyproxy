@@ -9,17 +9,149 @@
 	#  A proxy MUST NOT transform the payload (Section 3.3 of [RFC7231]) of
 	#   a message that contains a no-transform cache-control directive
 	#   (Section 5.2 of [RFC7234]).
+
+	# 2022-02-18 Stopping work on this for now.
+	#	- does not work with Edge on Windows due to 'proxy' mode
+	#		invoking the HTTP/1.1 'CONNECT' verb to try to
+	#		bypass/tunnel through the proxy for TLS connection
+	#		Since this is fundamental to the TLS anti-MITM
+	#		protections, this appears to require deviating
+	#		from the standards, or using this in a transparent
+	#		mode (e.g. redirection by a router so this looks like
+	#		a normal web server and not a proxy)
+	#	- in the code below, I temporarly disabled the 'upgrade-require'
+	#		header from incoming requests, but not sure if that made a difference
+	#	- I was able, with this exact version (v1.0.1a20) of `proxy.rb`
+	#		to use Classilla 9.2.3 on the TAM to successfully download
+	#		a `.sit` file from a HTTP site
+	#	- Earlier browsers (especially HTTP/1.0 ones that don't know about
+	#		the `CONNECT` verb) may work just fine with HTTPS connections?
+	#		I should test that
+	#		- Use `respond.to?` to test against Generic URI objects, so it least
+	#			we don't flood the zone with error messages
+	#		- Can we respond with a specific error page, something like
+	#			"This browser is too new for the proxy you are trying to use
+	#			to access this secure (HTTPS) website."
+	#	- Some recent attempts at viewing HTTPS sites resulted in a loop of
+	#		response code `302` requests)
+	#	- To do
+	#		- Figure out how to color debug console entries
+	#			e.g. green for `200`, yellow for `3xx`, red for `4xx`/`5xx`
+	#		- Can I have a custom method for those debug messages, that includes
+	#			things like the `verbose` toggle, maybe a line number, etc.?
+	#		- Can we store all headers in a database for future use?
+	#			- e.g. (datetime) (uri) (verb) (content-type) (content-length) (last-modified) (client_ip) (server_ip) ...
+	#	- Edited using VSCode & Github
+	#	- Testing was done on RPi, using the following bash aliases
+	#		- `alias run='./proxy.rb'`
+	#		- `alias gfc='clear && date && echo && git stash && git pull && chmod a+x proxy.rb && echo && grep -e "For debug" proxy.rb'`
+	#	- Tl;dr: there seems a purpose to this, but for more modern systems
+	#		(i.e. those with proxy support but not current TLS / certs)
+	#		other solutions may more sense.
+	#	- References and further reading:
+	#	- https://stackoverflow.com/questions/26381558/sending-http-requests-with-specific-http-version-protocol-in-ruby
+	#	- HTTP `CONNECT` verb
+	#		- https://www.rfc-editor.org/rfc/rfc2817#section-5.2
+	#		- https://www.rfc-editor.org/rfc/rfc2616#page-57
+	#		- https://stackoverflow.com/questions/6594604/connect-request-to-a-forward-http-proxy-over-an-ssl-connection
+	#			- https://bz.apache.org/bugzilla/show_bug.cgi?id=29744
+	#		- https://httpwg.org/specs/rfc7231.html#CONNECT
+	#		- https://reqbin.com/Article/HttpConnect
+	#		- https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/CONNECT
+	#	- https://medium.com/rubycademy/the-return-keyword-in-ruby-df0a7f578fcb
+	#	- https://docs.ruby-lang.org/en/master/URI/RFC2396_Parser.html
+	#	- Ruby general
+	#		- http://rubykoans.com/ http://github.com/edgecase/ruby_koans
+	#		- http://ruby-lang.org/
+	#		- https://ruby.github.io/TryRuby/ https://try.ruby-lang.org/ https://try.ruby-lang.org/playground/
+	#		- https://pragprog.com/book/ruby4/programming-ruby-1-9-2-0
+	#		- http://pragmaticstudio.com/ruby
+	#		- http://pragprog.com/titles/bmsft/everyday-scripting-with-ruby
+	#		- https://poignant.guide/ Welcome to the pirate radio of technical manuals.
+	#		- https://pine.fm/LearnToProgram/
+	#		- https://ruby-doc.org/docs/ruby-doc-bundle/ProgrammingRuby/index.html
+	#		- https://web.archive.org/web/20190714182258/http://www.rubyist.net:80/~slagell/ruby/
+	#		- https://web.archive.org/web/20190601212008/http://www.rubyist.net/~slagell/
+	#		- Blocks
+	#			- https://medium.com/@noordean/understanding-ruby-blocks-3a45d16891f1
+	#
+	#	- Ruby `Object` https://ruby-doc.org/core/Object.html
+	#		- "The Ruby Object Model"
+	#		- https://stackoverflow.com/questions/15769739/determining-type-of-an-object-in-ruby
+	#			`object.is_a?(ClassName)` or `object.class`, or 'duck typing', e.g. `object.respond_to?(:to_s)`
+	#			`p object.instance_of? String`. See also `Object.ancestors`
+	#		- https://www.youtube.com/watch?v=1l3U1X3z0CE
+	#	- Ruby `OpenURI`
+	#		- https://ruby-doc.org/stdlib-2.6.3/libdoc/open-uri/rdoc/OpenURI.html
+	#		- https://stackoverflow.com/questions/5786779/using-nethttp-get-for-an-https-url
+	#	- Ruby `nokogiri` Gem
+	#		- https://www.railscarma.com/blog/technical-articles/learning-the-fundamentals-of-nokogiri-gem/
+	#		- https://discuss.rubyonrails.org/t/nokogiri-as-a-default-dependency/74369
+	#		- https://rdoc.info/github/sparklemotion/nokogiri/Nokogiri/HTML/Document
+	#		- https://medium.com/@allegranzia/basic-webscraping-with-nokogiri-c9e9a4efc942
+	#	- Ruby class `IPSocket`
+	#		- https://docs.ruby-lang.org/en/master/IPSocket.html
+	#	- Requirements for Internet Hosts
+	#		- RFC 1123 https://datatracker.ietf.org/doc/html/rfc1123
+	#	- Internet Message Format (including HTTP messages)
+	#		- RFC 5322 https://datatracker.ietf.org/doc/html/rfc5322 
+	#		- Replaced RFC 2822 https://datatracker.ietf.org/doc/html/rfc2822
+	#		- Replaced RFC 822 https://datatracker.ietf.org/doc/html/rfc822
+	#	- HTTP https://developer.mozilla.org/en-US/docs/Web/HTTP/Resources_and_specifications
+	#		- HTTP/1.0 (c. 1996)
+	#			- RFC 1945 https://datatracker.ietf.org/doc/html/rfc1945
+	#		- HTTP/1.1 (c. 1997)
+	#			- RFC 7230 Hypertext Transfer Protocol (HTTP/1.1): Message Syntax and Routing
+	#				https://datatracker.ietf.org/doc/html/rfc7230
+	#				- Replaced RFC 2145 Use and Interpretation of HTTP Version Numbers https://datatracker.ietf.org/doc/html/rfc2145 
+	#				- RFC 2818 HTTP Over TLS https://datatracker.ietf.org/doc/html/rfc2818
+	#				- RFC 8615 Well-Known Uniform Resource Identifiers (URIs) https://datatracker.ietf.org/doc/html/rfc8615
+	#			- RFC 7231 Hypertext Transfer Protocol (HTTP/1.1): Semantics and Content
+	#				https://datatracker.ietf.org/doc/html/rfc7231
+	#				- Replaced RFC 2616 https://www.w3.org/Protocols/rfc2616/rfc2616.html
+	#				- RFC 2817 Upgrading to TLS Within HTTP/1.1 https://datatracker.ietf.org/doc/html/rfc2817
+	#					- Replaced RFC 2068 https://www.w3.org/Protocols/rfc2068/rfc2068.txt
+	#		- HTTP/1.2 proposal (c. 1996)
+	#			- https://www.w3.org/TR/WD-http-pep-960820
+	#			- RFC 822
+	#		- HTTP/2.0 (c. 2015)
+	#			- RFC 7540 https://datatracker.ietf.org/doc/html/rfc7540
+	#			- RFC 8740 Using TLS 1.3 with HTTP/2 https://datatracker.ietf.org/doc/html/rfc8740
+	#		- HTTP/2.1 (does not yet exist)
+	#		- HTTP/3.0 (does not yet exist)
+	#		- Forwarded HTTP Extension
+	#			- RFC 7239 https://datatracker.ietf.org/doc/html/rfc7239
+	#		- HTTP Immutable Responses
+	#			- RFC 8246 https://datatracker.ietf.org/doc/html/rfc8246
+	#		- SSL and TLS
+	#			- https://en.wikipedia.org/wiki/Transport_Layer_Security
+	#			- SSL 2.0 (c. 1995-2011)
+	#				- RFC 6176 Prohibiting Secure Sockets Layer (SSL) Version 2.0 https://datatracker.ietf.org/doc/html/rfc6176
+	#			- SSL 3.0 (c. 1996-2015)
+	#				- RFC 6101 https://datatracker.ietf.org/doc/html/rfc6101
+	#				- RFC 7568 Deprecating Secure Sockets Layer Version 3.0 https://datatracker.ietf.org/doc/html/rfc7568
+	#			- TLS 1.0 (c. 1999)
+	#				- RFC 2246 https://datatracker.ietf.org/doc/html/rfc2246
+	#			- TLS 1.1 (c. 2006)
+	#				- RFC 4346 https://datatracker.ietf.org/doc/html/rfc4346
+	#				- RFC 8996 Deprecating TLS 1.0 and TLS 1.1 https://datatracker.ietf.org/doc/html/rfc8996
+	#			- TLS 1.2 (c. 2008)
+	#				- RFC 5246 https://datatracker.ietf.org/doc/html/rfc5246
+	#			- TLS 1.3 (c. 2019 May)
+	#				- RFC 8446 https://datatracker.ietf.org/doc/html/rfc8446
+	#			- TLS 1.4 (does not yet exist)
+	#			- TLS 2.0 (does not yet exist)
 }
 	
-require 'rubygems'
-require 'socket'
-require 'uri'
-require 'net/http'
-require 'net/https'
-require 'openssl'
-require 'nokogiri'
-require 'htmlentities'
-require 'rmagick'
+require 'rubygems'		# https://stackoverflow.com/questions/2711779/require-rubygems
+require 'socket'		# https://docs.ruby-lang.org/en/master/Socket.html
+require 'uri'			# https://docs.ruby-lang.org/en/master/URI.html https://docs.ruby-lang.org/en/master/URI/HTTP.html
+require 'net/http'		# https://docs.ruby-lang.org/en/master/Net/HTTP.html https://ruby-doc.org/stdlib-3.1.0/libdoc/net/http/rdoc/Net/HTTP.html
+require 'net/https'		# https://ruby-doc.org/stdlib-2.6.5/libdoc/net/http/rdoc/Net/HTTP.html#class-Net::HTTP-label-HTTPS
+require 'openssl'		# https://docs.ruby-lang.org/en/master/OpenSSL.html
+require 'nokogiri'		# https://nokogiri.org/
+require 'htmlentities'	# https://www.rubydoc.info/gems/htmlentities/HTMLEntities
+require 'rmagick'		# https://rmagick.github.io/
 
 # Force HTTP/1.0
 # https://stackoverflow.com/questions/26381558/sending-http-requests-with-specific-http-version-protocol-in-ruby
@@ -31,7 +163,7 @@ $bufferLength = 4096
 # $verbose = false
 $verbose = true
 $userAgent = 'LegacyProxy/1.0'
-$version = 'v1.0.1a20'	# For debug / change management purposes only ... not normally seen by user
+$version = 'v1.0.1a21'	# For debug / change management purposes only ... not normally seen by user
 $programName = $0		# Mostly to help me remember the syntax - jhg
 
 $entityCoder = HTMLEntities.new

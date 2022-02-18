@@ -1,3 +1,8 @@
+## Note
+**As of 2022-02-18, this branch seems to work for browsers that don't support the HTTP `CONNECT` verb.** That said, it also has a few modifications and a bunch of debug code not in the original branch. _Go forth here with caution and patience!_
+
+<hr />
+
 The internet has changed a lot in the past decade or two and has left some of the vintage computers that built it behind.  This is an HTTP proxy that can be used to access modern content on older browsers.
 
 ### Installation

@@ -26,7 +26,7 @@ $bufferLength = 4096
 # $verbose = false
 $verbose = true
 $userAgent = 'LegacyProxy/1.0'
-$version = 'v1.0.1a17'	# For debug / change management purposes only ... not normally seen by user
+$version = 'v1.0.1a18'	# For debug / change management purposes only ... not normally seen by user
 $programName = $0		# Mostly to help me remember the syntax - jhg
 
 $entityCoder = HTMLEntities.new
@@ -428,11 +428,12 @@ def sendProxyContent(client, url, verb, headers, body)
 			puts "    --> HTTP    send body: #{body}"
 			puts ""
 		end
-		response = http.send_request(verb, uri.to_s, body, headers) # removed .request_uri
+		response = http.send_request(verb, uri.request_uri, body, headers) # removed .request_uri
 
 		puts "--> Response code: #{response.code}" if $verbose
 
 		responseHeaders = {}
+		response.to_s if $verbose # Full text of response to HTTP request
 		response.header.each do |key, value|
 			next if value.nil?
 			puts " |__ resp key: #{key}; value: #{value}" if $verbose

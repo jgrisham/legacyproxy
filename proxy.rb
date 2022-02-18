@@ -26,7 +26,7 @@ $bufferLength = 4096
 # $verbose = false
 $verbose = true
 $userAgent = 'LegacyProxy/1.0'
-$version = 'v1.0.1a16'	# For debug / change management purposes only ... not normally seen by user
+$version = 'v1.0.1a17'	# For debug / change management purposes only ... not normally seen by user
 $programName = $0		# Mostly to help me remember the syntax - jhg
 
 $entityCoder = HTMLEntities.new
@@ -435,7 +435,7 @@ def sendProxyContent(client, url, verb, headers, body)
 		responseHeaders = {}
 		response.header.each do |key, value|
 			next if value.nil?
-			puts " |__ key: #{key}; value: #{value}" if $verbose
+			puts " |__ resp key: #{key}; value: #{value}" if $verbose
 			key = key.downcase
 			if responseHeaders.has_key?(key) then
 				responseHeaders[key] += ", #{value}"
@@ -488,6 +488,7 @@ loop {
 			key, value = h.split(/:\s*/)
 			next if value.nil?
 			next if key == "Upgrade-Insecure-Requests"
+			puts " |__ req key: #{key}; value: #{value}" if $verbose
 			key = key.downcase
 			if headers.has_key?(key) then
 				headers[key] += ", #{value}"

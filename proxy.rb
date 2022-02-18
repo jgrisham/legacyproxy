@@ -21,12 +21,17 @@ require 'nokogiri'
 require 'htmlentities'
 require 'rmagick'
 
+# Force HTTP/1.0
+# https://stackoverflow.com/questions/26381558/sending-http-requests-with-specific-http-version-protocol-in-ruby
+Net::HTTP.send(:remove_const, :HTTPVersion) # avoid warning
+Net::HTTP::HTTPVersion = '1.0'
+
 $port = 8080
 $bufferLength = 4096
 # $verbose = false
 $verbose = true
 $userAgent = 'LegacyProxy/1.0'
-$version = 'v1.0.1a19'	# For debug / change management purposes only ... not normally seen by user
+$version = 'v1.0.1a20'	# For debug / change management purposes only ... not normally seen by user
 $programName = $0		# Mostly to help me remember the syntax - jhg
 
 $entityCoder = HTMLEntities.new
